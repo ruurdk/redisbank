@@ -3,6 +3,9 @@ package com.redislabs.demos.redisbank.transactions;
 import java.time.Duration;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.redis.lettucemod.api.StatefulRedisModulesConnection;
+import com.redis.lettucemod.api.sync.RedisJSONCommands;
+import com.redis.lettucemod.json.RedisJSONCommandBuilder;
 import com.redislabs.demos.redisbank.Config;
 import com.redislabs.demos.redisbank.SerializationUtil;
 
@@ -29,17 +32,16 @@ public class BankTransactionForwarder
 
     private final Config config;
     private final StringRedisTemplate redis;
+    private final StatefulRedisModulesConnection redismod;
     private final SimpMessageSendingOperations smso;
-    private final BankTransactionRepository btr;
     private StreamMessageListenerContainer<String, MapRecord<String, String, String>> container;
     private Subscription subscription;
 
-    public BankTransactionForwarder(Config config, StringRedisTemplate redis, SimpMessageSendingOperations smso,
-            BankTransactionRepository btr) {
+    public BankTransactionForwarder(Config config, StringRedisTemplate redis, StatefulRedisModulesConnection connection, SimpMessageSendingOperations smso) {
         this.config = config;
         this.redis = redis;
+        this.redismod = connection;
         this.smso = smso;
-        this.btr = btr;
     }
 
     @Override
@@ -54,19 +56,23 @@ public class BankTransactionForwarder
     @Override
     public void onMessage(MapRecord<String, String, String> message) {
         LOGGER.info("Message received from stream: {}", message);
-        // Update search index whenever a new transaction arrives via the stream
+        // Add to Redis, it will also auto-update search index whenever a new transaction arrives via the stream
         String messageString = message.getValue().get("transaction");
         try {
-            BankTransaction bankTransaction = SerializationUtil.deserializeObject(messageString, BankTransaction.class);
-            btr.save(bankTransaction);
-        } catch (JsonProcessingException e) {
+            // if we need an object we could do this but we can use native String/JSON as well
+            // BankTransaction bankTransaction = SerializationUtil.deserializeObject(messageString, BankTransaction.class);
+            RedisJSONCommands<String, String> red = redismod.sync();
+            red.jsonSet("RedisBank:BankTransaction:"+ message.getId().getValue(),
+                    ".", // JSON Path
+                    messageString
+                    );
+        } catch (Exception e) {
             LOGGER.error("Error parsing JSON: {}", e.getMessage());
         }
 
         // Stream message to websocket connection topic
         smso.convertAndSend(config.getStomp().getTransactionsTopic(), message.getValue());
         LOGGER.info("Websocket message: {}", messageString);
-
     }
 
     @Override

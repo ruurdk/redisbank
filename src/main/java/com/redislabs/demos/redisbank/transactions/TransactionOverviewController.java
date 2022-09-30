@@ -14,6 +14,8 @@ import com.redis.lettucemod.timeseries.TimeRange;
 import com.redislabs.demos.redisbank.Config;
 import com.redislabs.demos.redisbank.Config.StompConfig;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations.TypedTuple;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -27,8 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 @CrossOrigin
 public class TransactionOverviewController {
 
-    private static final String ACCOUNT_INDEX = "transaction_account_idx";
-    private static final String SEARCH_INDEX = "transaction_description_idx";
+    private static final Logger LOGGER = LoggerFactory.getLogger(TransactionOverviewController.class);
     private static final String BALANCE_TS = "balance_ts";
     private static final String SORTED_SET_KEY = "bigspenders";
 
@@ -87,20 +88,23 @@ public class TransactionOverviewController {
     @GetMapping("/search")
     @SuppressWarnings("all")
     public SearchResults<String, String> searchTransactions(@RequestParam("term") String term) {
+        LOGGER.info("RediSearch: "+term);
         RediSearchCommands<String, String> commands = srsc.sync();
 
         SearchOptions options = SearchOptions
-                .builder().highlight(SearchOptions.Highlight.builder().field("description").field("fromAccountName")
-                        .field("transactionType").tags("<mark>","</mark>").build()).build();
+                .builder().withPayloads(true).highlight(SearchOptions.Highlight.builder().field("$.description").field("$.fromAccountName")
+                        .field("$.transactionType").tags("<mark>","</mark>").build()).build();
 
-        SearchResults<String, String> results = commands.search(SEARCH_INDEX, term, options);
+        SearchResults<String, String> results = commands.search(BankTransactionGenerator.SEARCH_INDEX, term, options);
+        LOGGER.info("RediSearch returned: "+results.size());//ALEX currently broken due to [$=JSON,$=JSON] kind of format
         return results;
     }
 
     @GetMapping("/transactions")
     public SearchResults<String, String> listTransactions() {
+        LOGGER.info("RediSearch: by Account: "+"lars");
         RediSearchCommands<String, String> commands = srsc.sync();
-        SearchResults<String, String> results = commands.search(ACCOUNT_INDEX, "lars");
+        SearchResults<String, String> results = commands.search(BankTransactionGenerator.ACCOUNT_INDEX, "lars");
         return results;
     }
 

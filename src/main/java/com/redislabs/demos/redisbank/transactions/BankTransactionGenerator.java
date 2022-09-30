@@ -36,8 +36,8 @@ public class BankTransactionGenerator {
     private static final int TRANSACTION_RATE_MS = 10000;
     private static final String TRANSACTION_KEY = "transaction";
     private static final String TRANSACTIONS_STREAM = "transactions";
-    private static final String ACCOUNT_INDEX = "transaction_account_idx";
-    private static final String SEARCH_INDEX = "transaction_description_idx";
+    public static final String ACCOUNT_INDEX = "transaction_account_idx";
+    public static final String SEARCH_INDEX = "transaction_description_idx";
     private static final String BALANCE_TS = "balance_ts";
     private static final String SORTED_SET_KEY = "bigspenders";
     private final List<TransactionSource> transactionSources;
@@ -74,12 +74,20 @@ public class BankTransactionGenerator {
                 throw new RuntimeException(e);
             }
         }
-        commands.create(ACCOUNT_INDEX, Field.text("toAccountName").build());
+        commands.create(ACCOUNT_INDEX,
+                com.redis.lettucemod.search.CreateOptions.<String, String>builder().
+                        on(com.redis.lettucemod.search.CreateOptions.DataType.JSON).
+                        prefix("RedisBank:BankTransaction:").build(),
+                Field.text("$.toAccountName").build());
         LOGGER.info("Created {} index", ACCOUNT_INDEX);
 
-        commands.create(SEARCH_INDEX, Field.text("description").matcher(Field.TextField.PhoneticMatcher.ENGLISH).build(),
-                Field.text("fromAccountName").matcher(Field.TextField.PhoneticMatcher.ENGLISH).build(),
-                Field.text("transactionType").matcher(Field.TextField.PhoneticMatcher.ENGLISH).build());
+        commands.create(SEARCH_INDEX,
+                com.redis.lettucemod.search.CreateOptions.<String, String>builder().
+                        on(com.redis.lettucemod.search.CreateOptions.DataType.JSON).
+                        prefix("RedisBank:BankTransaction:").build(),
+                Field.text("$.description").matcher(Field.TextField.PhoneticMatcher.ENGLISH).build(),
+                Field.text("$.fromAccountName").matcher(Field.TextField.PhoneticMatcher.ENGLISH).build(),
+                Field.text("$.transactionType").matcher(Field.TextField.PhoneticMatcher.ENGLISH).build());
         LOGGER.info("Created {} index", SEARCH_INDEX);
     }
 
