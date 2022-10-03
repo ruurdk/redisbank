@@ -1,12 +1,19 @@
 package com.redislabs.demos.redisbank.transactions;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonFactoryBuilder;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redis.lettucemod.api.StatefulRedisModulesConnection;
 import com.redis.lettucemod.api.sync.RediSearchCommands;
+import com.redis.lettucemod.search.Document;
 import com.redis.lettucemod.search.SearchOptions;
 import com.redis.lettucemod.search.SearchResults;
 import com.redis.lettucemod.timeseries.Sample;
@@ -14,10 +21,12 @@ import com.redis.lettucemod.timeseries.TimeRange;
 import com.redislabs.demos.redisbank.Config;
 import com.redislabs.demos.redisbank.Config.StompConfig;
 
+import org.apache.tomcat.util.json.JSONParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations.TypedTuple;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -87,17 +96,25 @@ public class TransactionOverviewController {
 
     @GetMapping("/search")
     @SuppressWarnings("all")
-    public SearchResults<String, String> searchTransactions(@RequestParam("term") String term) {
+    public ResponseEntity<List<JsonNode>> searchTransactions(@RequestParam("term") String term) throws JsonProcessingException {
         LOGGER.info("RediSearch: "+term);
         RediSearchCommands<String, String> commands = srsc.sync();
 
+        //TODO ALEX finalize for add/del highlight
         SearchOptions options = SearchOptions
                 .builder().withPayloads(true).highlight(SearchOptions.Highlight.builder().field("$.description").field("$.fromAccountName")
                         .field("$.transactionType").tags("<mark>","</mark>").build()).build();
 
         SearchResults<String, String> results = commands.search(BankTransactionGenerator.SEARCH_INDEX, term, options);
         LOGGER.info("RediSearch returned: "+results.size());//ALEX currently broken due to [$=JSON,$=JSON] kind of format
-        return results;
+
+        // Redis returns a list of $:"JSON string" so we further simplify the output for the Frontend
+        ObjectMapper mapper = new ObjectMapper();
+        List<JsonNode> resJ = new ArrayList<JsonNode>();
+        for (int i = 0; i < results.size(); i++) {
+            resJ.add(mapper.readTree(results.get(i).get("$")));
+        }
+        return ResponseEntity.ok(resJ);
     }
 
     @GetMapping("/transactions")
