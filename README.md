@@ -1,21 +1,22 @@
 # About Redisbank
 
-This application uses *Redis Stack* combining Redis core data structures, Streams, RediSearch and TimeSeries to build a
+This application uses **Redis Stack** combining Redis core data structures, Streams, RediSearch and TimeSeries to build a
 Java/Spring Boot/Lettuce application that shows a searchable transaction overview with realtime updates
 as well as a personal finance management overview with realtime balance and biggest spenders updates. UI in Bootstrap/CSS/Vue.
 
-Features in *Redisbank*:
+Features in **Redisbank**:
 
-- Redis Streams for the realtime transactions
-- RedisJSON for storing transactions
-- Sorted Sets for the 'biggest spenders'
-- Redis TimeSeries for the balance over time
-- RediSearch for searching transactions
-- Redis hashes for http session storage via Spring Session
+- **Redis Streams** for the realtime transactions
+- **RedisJSON** for storing transactions
+- **Redis Sorted Sets** for the 'biggest spenders'
+- **RediSearch** for searching transactions
+- **Redis TimeSeries** for the balance over time
+- **Redis hashes** for http session storage via Spring Session
 
-**Important note**
+# Important note
 
-> When using this forked repository and the `basic branch`(https://github.com/alexvasseur/redisbank/tree/basic):  
+When using this forked repository and the `basic branch (https://github.com/alexvasseur/redisbank/tree/basic):
+
 > - The application is using the Spring framework in a very basic way only for the web/REST API and for running as standalone executable jar
 > - The codebase is using plain Lettuce API for Redis.
 > - The data model for BankTransaction is JSON with RedisJSON (instead of basic Redis Hashes)
@@ -26,7 +27,17 @@ Features in *Redisbank*:
 
 # Getting Started
 
-## Prerequisites
+## Building and Running in Gitpod
+
+Gitpod can spin up a fully featured developer friendly environment with both Visual Studio and Redisbank running for you.
+
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/alexvasseur/redisbank/tree/basic)
+
+1. Once the environment is available, use the Gitpod Visual Studio `TERMINAL` window to use local build or docker compose as instructed below.
+2. Wait a minute or so and Gitpod will detect the ports from the application (8080) and RedisInsight (8001) for you to access over the Gitpod web routing. You can check in the Gitpod Visual Studio `PORTS` window.
+3. Make sure to select the `Open Browser` to open those.
+
+## Prerequisites if not using Gitpod
 
 1. JDK 17 or higher (https://openjdk.java.net/install/index.html)
 2. Docker Desktop (https://www.docker.com/products/docker-desktop), or Colima with a docker/k8s/containerd runtime
@@ -53,16 +64,6 @@ docker run --name redis-stack --rm -p 6379:6379 -p 8001:8001 redis/redis-stack:l
 ./mvnw spring-boot:run
 ```
 3. Access *Redisbank* and *Redis Insight* as instructed above
-
-## Building and Running in Gitpod
-
-Gitpod can spin up a fully featured developer friendly environment with both Visual Studio and Redisbank running for you.
-
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/alexvasseur/redisbank/tree/basic)
-
-1. Once the environment is available, use the Gitpod Visual Studio `TERMINAL` window to use local build or docker compose as instructed above. 
-2. Wait a minute or so and Gitpod will detect the ports from the application (8080) and RedisInsight (8001) for you to access over the Gitpod web routing. You can check in the Gitpod Visual Studio `PORTS` window. 
-3. Make sure to select the `Open Browser` to open those.
 
 # Interesting code to explore
 
