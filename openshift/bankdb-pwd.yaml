@@ -1,7 +1,0 @@
-kind: Secret
-apiVersion: v1
-metadata:
-  name: bankdb-pwd
-data:
-  password: cmVkaXNiYW5r
-type: Opaque
