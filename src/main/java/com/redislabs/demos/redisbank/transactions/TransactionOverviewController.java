@@ -100,21 +100,20 @@ public class TransactionOverviewController {
         LOGGER.info("RediSearch: "+term);
         RediSearchCommands<String, String> commands = srsc.sync();
 
-        //TODO ALEX finalize for add/del highlight
-        SearchOptions options = SearchOptions
-                .builder().withPayloads(true).highlight(SearchOptions.Highlight.builder().field("$.description").field("$.fromAccountName")
-                        .field("$.transactionType").tags("<mark>","</mark>").build()).build();
+        // optional options
+        SearchOptions options = SearchOptions.builder().build();
 
         SearchResults<String, String> results = commands.search(BankTransactionGenerator.SEARCH_INDEX, term, options);
-        LOGGER.info("RediSearch returned: "+results.size());//ALEX currently broken due to [$=JSON,$=JSON] kind of format
+        LOGGER.info("RediSearch returned: "+results.size());
 
-        // Redis returns a list of $:"JSON string" so we further simplify the output for the Frontend
+        // Redis returns a raw list of $:"JSON string" so we further simplify the output for the Frontend
+        // at this stage Lettuce does not transform the content, so here is example code to turn this back in JSON
         ObjectMapper mapper = new ObjectMapper();
-        List<JsonNode> resJ = new ArrayList<JsonNode>();
+        List<JsonNode> resultsJ = new ArrayList<JsonNode>();
         for (int i = 0; i < results.size(); i++) {
-            resJ.add(mapper.readTree(results.get(i).get("$")));
+            resultsJ.add(mapper.readTree(results.get(i).get("$")));
         }
-        return ResponseEntity.ok(resJ);
+        return ResponseEntity.ok(resultsJ);
     }
 
     @GetMapping("/transactions")
