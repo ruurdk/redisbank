@@ -98,12 +98,7 @@ public class TransactionOverviewController {
     @SuppressWarnings("all")
     public ResponseEntity<List<JsonNode>> searchTransactions(@RequestParam("term") String term) throws JsonProcessingException {
         LOGGER.info("RediSearch: "+term);
-        RediSearchCommands<String, String> commands = srsc.sync();
-
-        // optional options
-        SearchOptions options = SearchOptions.builder().build();
-
-        SearchResults<String, String> results = commands.search(BankTransactionGenerator.SEARCH_INDEX, term, options);
+        SearchResults<String, String> results = new SearchResults<String, String>();
         LOGGER.info("RediSearch returned: "+results.size());
 
         // Redis returns a raw list of $:"JSON string" so we further simplify the output for the Frontend
