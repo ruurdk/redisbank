@@ -65,19 +65,7 @@ public class TransactionOverviewController {
 
     @GetMapping("/biggestspenders")
     public BiggestSpenders biggestSpenders() {
-        Set<TypedTuple<String>> range = redis.opsForZSet().rangeByScoreWithScores(SORTED_SET_KEY, 0, Double.MAX_VALUE);
-        if (range.size() > 0) {
-            BiggestSpenders biggestSpenders = new BiggestSpenders(range.size());
-            int i = 0;
-            for (TypedTuple<String> typedTuple : range) {
-                biggestSpenders.getSeries()[i] = Math.floor(typedTuple.getScore() * 100) / 100;
-                biggestSpenders.getLabels()[i] = typedTuple.getValue();
-                i++;
-            }
-            return biggestSpenders;
-        } else {
-            return new BiggestSpenders(0);
-        }
+        return new BiggestSpenders(0);
 
     }
 
