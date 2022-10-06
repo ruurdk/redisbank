@@ -31,11 +31,13 @@ When using this forked repository and the `basic branch (https://github.com/alex
 
 Gitpod can spin up a fully featured developer friendly environment with both Visual Studio and Redisbank running for you.
 
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/alexvasseur/redisbank/tree/basic)
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#GITPOD=gitpod/https://github.com/alexvasseur/redisbank/tree/basic)
 
 1. Once the environment is available, use the Gitpod Visual Studio `TERMINAL` window to use local build or docker compose as instructed below.
 2. Wait a minute or so and Gitpod will detect the ports from the application (8080) and RedisInsight (8001) for you to access over the Gitpod web routing. You can check in the Gitpod Visual Studio `PORTS` window.
 3. Make sure to select the `Open Browser` to open those.
+
+(Note for experts: we use Spring Profile "gitpod" thru a "GITPOD" env variable set in the "Open in Gitpod" url to configure the host for websocket to what Gitpod provides)
 
 ## Prerequisites if not using Gitpod
 

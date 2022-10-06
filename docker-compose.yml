@@ -17,6 +17,9 @@ services:
     environment:
       - REDIS_HOST=app-redis
       - REDIS_PORT=6379
+      - GITPOD_WORKSPACE_ID=${GITPOD_WORKSPACE_ID:-}
+      - GITPOD_WORKSPACE_CLUSTER_HOST=${GITPOD_WORKSPACE_CLUSTER_HOST:-}
+      - SPRING_PROFILES_ACTIVE=${GITPOD:-}
     ports:
       - "8080:8080"
     networks:
