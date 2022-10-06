@@ -60,20 +60,7 @@ public class TransactionOverviewController {
 
     @GetMapping("/balance")
     public Balance[] balance() {
-        List<Sample> tsValues = srsc.sync().range(BALANCE_TS,
-                TimeRange.from(System.currentTimeMillis() - (1000 * 60 * 60 * 24 * 7))
-                        .to(System.currentTimeMillis()).build());
-        Balance[] balanceTs = new Balance[tsValues.size()];
-        int i = 0;
-
-        for (Sample entry : tsValues) {
-            Object keyString = entry.getTimestamp();
-            Object valueString = entry.getValue();
-            balanceTs[i] = new Balance(keyString, valueString);
-            i++;
-        }
-
-        return balanceTs;
+        return new Balance[0];
     }
 
     @GetMapping("/biggestspenders")
