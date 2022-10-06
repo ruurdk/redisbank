@@ -58,21 +58,7 @@ public class BankTransactionForwarder
         LOGGER.info("Message received from stream: {}", message);
         // Add to Redis, it will also auto-update search index whenever a new transaction arrives via the stream
         String messageString = message.getValue().get("transaction");
-        try {
-            // if we need an object we could do this but we can use native String/JSON as well
-            // BankTransaction bankTransaction = SerializationUtil.deserializeObject(messageString, BankTransaction.class);
-            RedisJSONCommands<String, String> red = redismod.sync();
-            red.jsonSet("RedisBank:BankTransaction:"+ message.getId().getValue(),
-                    ".", // JSON Path
-                    messageString
-                    );
-        } catch (Exception e) {
-            LOGGER.error("Error parsing JSON: {}", e.getMessage());
-        }
 
-        // Stream message to websocket connection topic
-        smso.convertAndSend(config.getStomp().getTransactionsTopic(), message.getValue());
-        LOGGER.info("Websocket message: {}", messageString);
     }
 
     @Override
